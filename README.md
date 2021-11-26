@@ -1,1 +1,0 @@
-# GU-JAVASCRIPT-2
