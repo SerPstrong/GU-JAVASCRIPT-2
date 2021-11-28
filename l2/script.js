@@ -19,5 +19,3 @@ window.onload = () => {
     renderGoodsList(goods);
 
 }
-
-// renderGoodsList(goods);
