@@ -1,85 +1,71 @@
-// window.onload = () => {
-//
-//     const goods = [
-//         {title: 'Shirt', price: 150},
-//         {title: 'Socks', price: 50},
-//         {title: 'Jacket', price: 350},
-//         {title: 'Shoes', price: 250},
-//     ];
-//
-//     const renderGoodsItem = (title, price) => {
-//         return `<div class="goods-item"><h3>${title}</h3><p>${price}</p></div>`;
-//     };
-//
-//     const renderGoodsList = (list) => {
-//         let goodsList = list.map(item => renderGoodsItem(item.title, item.price));
-//         document.querySelector('.goods-list').innerHTML = goodsList.join("");
-//     }
-//
-//     renderGoodsList(goods);
-//
-// }
+const API = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
 
-
-class GoodsItem {
-    constructor(title, price) {
-        this.title = title;
-        this.price = price;
-    }
-
-    render() {
-        return `<div class="goods-item"><h3>${this.title}</h3><p>${this.price}</p><button class="sale-button">Купить</button></div>`;
-    }
+function getRequest(url,cb) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4) {
+                if (xhr.status !== 200) {
+                    console.log('Error');
+                } else {
+                    cb(xhr.responseText);
+                }
+            }
+        };
+        xhr.send();
+    });
 }
 
-class GoodsList {
-    constructor() {
+class ProductList {
+    constructor(container = '.products') {
+        this.container = container;
         this.goods = [];
         this.allProducts = [];
+        // this._fetchProducts();
+        this._getProducts()
+            .then(data => {
+                this.goods = [...data];
+                this._render();
+            });
     }
 
-    fetchGoods() {
-        this.goods = [
-            {title: 'Shirt', price: 150},
-            {title: 'Socks', price: 50},
-            {title: 'Jacket', price: 350},
-            {title: 'Shoes', price: 250},
-        ];
+    _getProducts() {
+        return fetch(`${API}/catalogData.json`)
+            .then(result => result.json())
+            .catch(error => {
+                console.log(error);
+            })
+    }
+    _render() {
+        const block = document.querySelector(this.container);
+
+        for (let product of this.goods) {
+            const productObject = new ProductItem(product);
+            this.allProducts.push(productObject);
+            block.insertAdjacentHTML('beforeend', productObject.render())
+        }
+    }
+}
+
+class ProductItem {
+    constructor(product, img = 'https://via.placeholder.com/200x150') {
+        this.title = product.title;
+        this.price = product.price;
+        this.id = product.id;
+        this.img = img;
     }
 
     render() {
-        let listHtml = '';
-        this.goods.forEach(good => {
-            const goodItem = new GoodsItem(good.title, good.price);
-            listHtml += goodItem.render();
-        });
-        document.querySelector('.goods-list').innerHTML = listHtml;
-    }
-
-    getSum() {
-        let res = 0;
-        for (let product of this.goods) {
-            res += product.price;
-        }
-
-        alert(res);
+        return `<div class="product-item" data-id="${this.id}">
+                <img src="${this.img}" alt="Some img">
+                <div class="desc">
+                    <h3>${this.title}</h3>
+                    <p>${this.price} \u20bd</p>
+                    <button class="buy-btn">Купить</button>
+                </div>
+            </div>`;
     }
 }
 
-window.onload = () => {
-    const list = new GoodsList();
-    list.fetchGoods();
-    list.render();
-    list.getSum();
-}
-
-class Basket {
-
-}
-
-class ElemBasket {
-
-}
-
-
-
+const list = new ProductList();
